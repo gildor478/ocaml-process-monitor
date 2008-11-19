@@ -18,7 +18,7 @@ let () =
         args            = [||];
         watch_resources = false;
         watch_children  = false;
-        watch_dir       = None;
+        watch_dir       = [];
         limit_mem       = None;
         limit_time      = None;
       }
@@ -40,6 +40,12 @@ let () =
         (fun () ->
            rconf := {!rconf with watch_children = true}),
       " Watch resources used by the process";
+
+      "--watch-dir",
+      Arg.String
+        (fun str ->
+           rconf := {!rconf with watch_dir = str :: !rconf.watch_dir}),
+      "dir Watch directory size";
 
       "--",
       Arg.Rest 
@@ -79,11 +85,13 @@ let () =
     in
     let new_str = 
       Printf.sprintf 
-        "VMSize: %s; VMRss: %s; Max. size: %s; Process: %d;"
+        "Time: %.2fs; VMSize: %s; VMRss: %s; Max. size: %s; Process: %d; Directory size: %s;"
+        wd.timestamp
         (string_of_bytes wd.vmsize)
         (string_of_bytes wd.vmrss)
         (string_of_bytes max_size)
         (MapPid.fold (fun _ _ i -> i + 1) wd.state 0)
+        wd.dirsize
     in
     let new_width =
       String.length new_str

@@ -1,7 +1,7 @@
 # TODO: copyright
 
 version = "$(pkg_version)"
-requires = ""
+requires = "fileutils unix"
 description = ""
 archive(byte) = "processMonitor.cma"
 archive(native) = "processMonitor.cmxa"

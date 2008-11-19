@@ -34,7 +34,7 @@ type configuration =
       *)
     watch_resources: bool;
     watch_children:  bool;
-    watch_dir:       string option;
+    watch_dir:       dirname list;
 
     (** Define a limit on execution time and memory used. It use [setrlimit]
       * and [Unix.fork] so it can be restricted to specific OS.
@@ -114,10 +114,27 @@ let create conf =
     else
       (fun wd -> wd)
   in
+  let dirsize_fun =
+    if conf.watch_dir <> [] then
+      (fun wd ->
+         try
+           (
+             {wd with 
+                 dirsize =
+                   FileUtil.string_of_size 
+                     (FileUtil.size_to_Mo
+                        (fst (FileUtil.StrUtil.du conf.watch_dir)))}
+           )
+         with _ ->
+           wd
+      )
+    else 
+      (fun wd -> wd)
+  in
     {
       conf          = conf;
       pid           = pid;
-      watchdata_fun = [time_wd_fun; os_wd_fun];
+      watchdata_fun = [time_wd_fun; os_wd_fun; dirsize_fun];
     }
 ;;
 let poll t =

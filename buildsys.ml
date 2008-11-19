@@ -1479,7 +1479,9 @@ let () =
     ]
     (* Checks*)
     [ 
+      Check.fenv (Check.package "unix");
       Check.fenv (Check.package ~version_comparator:">= 1.0.1" "oUnit");
+      Check.fenv (Check.package ~version_comparator:">= 0.2.0" "fileutils");
     ]
     (* .in files *)
     [

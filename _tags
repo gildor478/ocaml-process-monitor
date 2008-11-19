@@ -1,5 +1,6 @@
 "src/libprocess-monitor-ocaml": include
 <test/test-emulator.{native,byte}>: pkg_unix
 <test/*.ml>: pkg_oUnit, pkg_unix
-<test/test.{native,byte}>: pkg_oUnit, pkg_unix
-<src/ocaml-process-monitor/*.{ml,native,byte}>: pkg_unix
+<test/test.{native,byte}>: pkg_oUnit, pkg_unix, pkg_fileutils
+<src/libprocess-monitor-ocaml/*.ml>: pkg_unix, pkg_fileutils
+<src/ocaml-process-monitor/*.{ml,native,byte}>: pkg_unix, pkg_fileutils

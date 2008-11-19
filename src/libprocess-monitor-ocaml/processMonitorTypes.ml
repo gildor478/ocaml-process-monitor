@@ -26,6 +26,11 @@ type size_byte = float
 type time_second = float
 ;;
 
+(** Directory name
+  *)
+type dirname = string
+;;
+
 (** {1 Exception} *)
 
 (** Trying to use a feature which is not implementated. 

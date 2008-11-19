@@ -29,7 +29,7 @@ let _ =
       args            = [||];
       watch_resources = false;
       watch_children  = false;
-      watch_dir       = None;
+      watch_dir       = [];
       limit_mem       = None;
       limit_time      = None;
     }
