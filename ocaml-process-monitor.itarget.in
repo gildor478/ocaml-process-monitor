@@ -1,0 +1,4 @@
+src/libprocess-monitor-ocaml/processMonitor.$(ocamlbuild_best_library)
+src/ocaml-process-monitor/ocaml-process-monitor.$(ocamlbuild_best_program)
+test/test.$(ocamlbuild_best_program)
+test/test-emulator.$(ocamlbuild_best_program)

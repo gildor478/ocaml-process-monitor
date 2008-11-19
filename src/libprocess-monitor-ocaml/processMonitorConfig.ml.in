@@ -1,0 +1,17 @@
+
+(** Configuration module for ocaml-process-monitor.
+    @author Sylvain Le Gall
+  *)
+
+let version = "$(pkg_version)"
+;;
+
+let build_date = "$(build_date)"
+;;
+
+let copyright = 
+   "ocaml-process-monitor v"^version^" (build on "^build_date^")\n\
+    Copyright 2008 by Sylvain Le Gall <sylvain.le-gall@ocamlcore.com>\n\
+    Licenced under LGPL v2.1 with Ocaml exception"
+;;
+

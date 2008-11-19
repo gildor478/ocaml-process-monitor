@@ -1,0 +1,14 @@
+We are pleased to announce the version 0.0.0 release of ocaml_process_monitor.
+Some bugs surely remain.
+
+The ocaml_process_monitor project is brought to you by the effort of
+Sylvain Le Gall.
+
+TODO: write some descriptive informations
+
+See the file INSTALL for building and installation instructions.
+
+Please send all bug reports by electronic mail to:
+    Sylvain Le Gall
+
+See the file COPYING for copying conditions.

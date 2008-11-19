@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book 
+  PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" 
+  "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
+
+  <!ENTITY todo 'TODO'>
+    
+  <!-- Inclusion -->
+  <!ENTITY xi                          'http://www.w3c.org/2001/XInclude'>
+  <!ENTITY fbk                         '<xi:fallback xmlns:xi="&xi;">TODO</xi:fallback>'> 
+
+  <!ENTITY author
+    '<xi:include href="author.xml" xmlns:xi="&xi;" xpointer="xpointer(/node())"/>'>
+  <!ENTITY copyright
+    '<xi:include href="copyright.xml" xmlns:xi="&xi;" xpointer="xpointer(/node())"/>'>
+  <!ENTITY legal
+    '<xi:include href="copyright.xml" xmlns:xi="&xi;" xpointer="xpointer(/node())"/>'>
+    
+  <!-- Example source code inclusion
+  <!ENTITY source-example
+    '<xi:include href="../examples/po/Makefile" parse="text" xmlns:xi="&xi;">&fbk;</xi:include>'>
+  -->
+
+  <!-- TODO: manpage inclusion 
+  <!ENTITY prog-manpage           
+    '<xi:include href="ocaml-dbug.xml" xmlns:xi="&xi;" xpointer="xpointer(/refentry/node())"/>'>
+  -->
+
+  <!-- Links -->
+  <!ENTITY ocaml                      'OCaml'> 
+  <!ENTITY ocaml-download             '<ulink url="http://caml.inria.fr/ocaml/release.en.html">&ocaml;</ulink>'>
+  <!ENTITY ocaml-site                 '<ulink url="http://caml.inria.fr/">&ocaml;</ulink>'>
+  <!ENTITY ocaml-version              '3.0.9 or later'>
+
+  <!ENTITY findlib                    'Findlib'>
+  <!ENTITY findlib-download           '<ulink url="http://www.ocaml-programming.de/packages/">&findlib;</ulink>'>
+  <!ENTITY findlib-site               '<ulink url="http://www.ocaml-programming.de/packages/">&findlib;</ulink>'>
+  <!ENTITY findlib-version            '1.0.4 or later'>
+
+  <!ENTITY ocamake                    'OCamake'>
+  <!ENTITY ocamake-download           '<ulink url="http://www.le-gall.net/sylvain/download/">&ocamake;</ulink>'>  
+  <!ENTITY ocamake-site               '<ulink url="http://www.le-gall.net/sylvain/ocamake.html">&ocamake;</ulink>'>
+  <!ENTITY ocamake-version            '0.1.0 or later'>
+
+  <!ENTITY ounit                      'OUnit'>
+  <!ENTITY ounit-download             '<ulink url="http://www.xs4all.nl/~mmzeeman/ocaml/">&ounit;</ulink>'>
+  <!ENTITY ounit-site                 '<ulink url="http://www.xs4all.nl/~mmzeeman/ocaml/">&ounit;</ulink>'>
+  <!ENTITY ounit-version              '1.0.1 or later'>
+
+  <!ENTITY ocaml-benchmark            'OCaml-benchmark'>
+  <!ENTITY ocaml-benchmark-download   '<ulink url="http://prdownloads.sourceforge.net/ocaml-benchmark/">&ocaml-benchmark;</ulink>'>
+  <!ENTITY ocaml-benchmark-site       '<ulink url="http://ocaml-benchmark.sourceforge.net/">&ocaml-benchmark;</ulink>'>
+  <!ENTITY ocaml-benchmark-version    '0.6 or later'>
+
+  <!ENTITY ocaml-gettext              'OCaml-gettext'>
+  <!ENTITY ocaml-gettext-download     '<ulink url="http://www.le-gall.net/sylvain/download/">&ocaml-gettext;</ulink>'>  
+  <!ENTITY ocaml-gettext-site         '<ulink url="http://www.le-gall.net/sylvain/ocaml-gettext.html">&ocaml-gettext;</ulink>'>
+  <!ENTITY ocaml-gettext-version      '0.2.0 or later'>
+
+  <!ENTITY ocaml-dbug                 'OCaml-dbug'>
+  <!ENTITY ocaml-dbug-download        '<ulink url="http://www.le-gall.net/sylvain/download/">&ocaml-dbug;</ulink>'>  
+  <!ENTITY ocaml-dbug-site            '<ulink url="http://www.le-gall.net/sylvain/ocaml-dbug.html">&ocaml-dbug;</ulink>'>
+  <!ENTITY ocaml-dbug-version         '0.1.0 or later'>
+
+  <!ENTITY docbook                    'Docbook'>
+  <!ENTITY docbook-download           '<ulink url="http://prdownloads.sourceforge.net/docbook/">&docbook;</ulink>'>
+  <!ENTITY docbook-site               '<ulink url="http://docbook.sourceforge.net/">&docbook;</ulink>'>
+  <!ENTITY docbook-version            '4.4'>
+
+  <!ENTITY xsltproc                   'Xsltproc'>
+  <!ENTITY xsltproc-download          '<ulink url="http://xmlsoft.org/XSLT/downloads.html">&xsltproc;</ulink>'>
+  <!ENTITY xsltproc-site              '<ulink url="http://xmlsoft.org/XSLT/">&xsltproc;</ulink>'>
+  <!ENTITY xsltproc-version           '1.1.12 or later'>
+  
+  <!ENTITY fop                        'Fop'>
+  <!ENTITY fop-download               '<ulink url="http://www.apache.org/dyn/closer.cgi/xml/fop">&fop;</ulink>'>
+  <!ENTITY fop-site                   '<ulink url="http://www.apache.org/dyn/closer.cgi/xml/fop">&fop;</ulink>'>
+  <!ENTITY fop-version                '0.20.5 or later'>
+  ]
+>
+<book>
+  <title>ocaml_process_monitor_manual</title>
+  <bookinfo>
+    &legal;
+    &author;
+    &copyright;
+    <revhistory>
+      <revision>
+        <revnumber>svn:revision</revnumber>
+        <date>svn:date</date>
+      </revision>
+    </revhistory>
+  </bookinfo>
+  <chapter>
+    <title>Overview</title>
+    <para>
+      &todo;
+    </para>
+  </chapter>
+  <chapter>
+    <title>Installation</title>
+    <section>
+      <title>From source</title>
+      <para>You need to install the following prerequisites :
+        <itemizedlist>
+          <listitem>
+            <para>
+              &todo;
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              &ocaml-download; &ocaml-version;,
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              &findlib-download; &findlib-version;,
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              &ocamake-download; &ocamake-version;,
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              &ounit-download; &ounit-version;,
+              <footnote id="build-test"><para>Only if you want to build unitary test tool.</para></footnote>,
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              &ocaml-benchmark-download; &ocaml-benchmark-version;,
+              <footnote id="build-benchmark"><para>Only if you want to build benchmarking tool.</para></footnote>,
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              &ocaml-gettext-download; &ocaml-gettext-version;,
+              <footnote id="build-i18n"><para>Only if you want to enable NLS support.</para></footnote>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              &ocaml-dbug-download; &ocaml-dbug-version;,
+              <footnote id="build-dbug"><para>Only if you want to enable dbug support.</para></footnote>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              &docbook-download; &docbook-version;,
+              <footnote id="build-doc"><para>Only if you want to build the documentation</para></footnote>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              &xsltproc-download; &xsltproc-version;,
+              <footnoteref linkend="build-doc"/>,
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              &fop-download; &fop-version;.
+              <footnoteref linkend="build-doc"/>,
+            </para>
+          </listitem>
+        </itemizedlist>
+      </para>
+      <para>
+        After having build and install all prerequisites, extract the source
+        code to a directory. Go to this directory and execute the following command :
+        <itemizedlist>
+          <listitem>
+            <para>
+              <command>ocamake <option>configure</option></command>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <command>ocamake <option>build</option></command>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <command>ocamake <option>install</option></command>
+            </para>
+          </listitem>
+        </itemizedlist>
+      </para>
+      <para>
+        Building the benchmark and the unitary test tools is important, especially for debugging 
+        purpose. If you encounter problems, you should first try to run this tools commands. They 
+        will give you good hints on what causes the problem.
+      </para>
+      <para>
+        Enabling dbug support is a good idea if you encounter problems. It can give you a lot of 
+        information about the source of error. Consider this option if you want to be able to trace
+        precisely the source of a bug, before reporting it.
+      </para>
+    </section>
+    <!-- Binary based distribution -->
+    <!-- Debian 
+    <section>
+      <title>Debian distribution</title>
+      <para>
+        A debian package is available in the official Debian archive ( release &quot;unstable&quot;,
+        &quot;main&quot; section ). 
+      </para>
+      <para>
+        To install it, use the command :
+        <command>apt-get 
+          <option>install</option> <varname>XXX</varname>
+        </command>.
+      </para>
+    </section>
+    -->
+    <!-- Fedora 
+    <section>
+      <title>Fedora distribution</title>
+      <para>
+        A RPM for Fedora is available at the <ulink url="http://">fedora repository</ulink>.
+      </para>
+      <para>
+        To install it, use the command :
+        <command>rpm 
+          <option>-i</option> <varnam>XXX.rpm</varnam>
+        </command>
+      </para>
+    </section>
+    -->
+    <!-- Suse 
+    <section>
+      <title>Suse distribution</title>
+      <para>
+        A RPM for Suse is available at the <ulink url="http://">suse repository</ulink>.
+      </para>
+      <para>
+        To install it, use the command :
+        <command>rpm 
+          <option>-i</option> <varnam>XXX.rpm</varnam>
+        </command>
+      </para>
+    </section>
+    -->
+    <!-- Mandriva 
+    <section>
+      <title>Mandriva distribution</title>
+      <para>
+        A RPM for Mandriva is available at the <ulink url="http://">mandriva repository</ulink>.
+      </para>
+      <para>
+        To install it, use the command :
+        <command>rpm 
+          <option>-i</option> <varnam>XXX.rpm</varnam>
+        </command>
+      </para>
+    </section>
+    -->
+    <!-- ... -->
+    <!-- GODI 
+    <section>
+      <title>GODI source based &ocaml; distribution</title>
+      <para>
+        A GODI package is available in the official GODI repository.
+      </para>
+      <para>
+        To install it, use the command :
+        <command>XXX</command>
+      </para>
+    </section>
+    -->
+    <section>
+      <title>Other distributions</title>
+      <para>
+        There is no plan to release packages for other distributions. If you have any skill
+        concerning the packaging for any other distribution, please contact me.
+      </para>
+    </section>
+  </chapter>
+  <!-- For library -->
+  <chapter>
+    <title>Programming with XXX</title>
+    <section>
+      <title>Overview</title>
+      <para/>
+    </section>
+    <section>
+      <title>Makefile</title>
+      <para/>
+    </section>
+    <section>
+      <title>Program</title>
+      <para/>
+    </section>
+    <section>
+      <title>Library</title>
+      <para/>
+    </section>
+  </chapter>
+  <!-- For programs -->
+  <chapter>
+    <title>Using XXX</title>
+    <para/>
+  </chapter>
+  <!-- Links -->
+  <appendix>
+    <title>Links</title>
+    <itemizedlist>
+      <listitem>
+        <para>
+          &ocaml-site;
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          &findlib-site;
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          &ocamake-site;
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          &ounit-site;
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          &ocaml-benchmark-site;
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          &ocaml-gettext-site;
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          &ocaml-dbug-site;
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          &docbook-site;
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          &xsltproc-site;
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          &fop-site;
+        </para>
+      </listitem>
+    </itemizedlist>
+  </appendix>
+  <!-- TODO: manpage inclusion 
+  <appendix>
+    <title>Manpages</title>
+    <refentry>
+      &ocaml-dbug-manual;
+    </refentry>
+    <refentry>
+      &ocaml-dbug-options-manual;
+    </refentry>
+  </appendix>
+  -->
+</book>

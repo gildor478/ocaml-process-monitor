@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE refentry 
+  PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+  "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
+
+  <!ENTITY todo 'TODO'>
+
+  <!-- Inclusion -->
+  <!ENTITY xi 'http://www.w3c.org/2001/XInclude'>
+  <!ENTITY fbk '<xi:fallback xmlns:xi="&xi;">TODO</xi:fallback>'>
+
+  <!ENTITY author
+    '<xi:include href="author.xml" xmlns:xi="&xi;" xpointer="xpointer(/node())"/>'>
+  <!ENTITY copyright
+    '<xi:include href="copyright.xml" xmlns:xi="&xi;" xpointer="xpointer(/node())"/>'>
+  <!ENTITY legal
+    '<xi:include href="copyright.xml" xmlns:xi="&xi;" xpointer="xpointer(/node())"/>'>
+]>
+<refentry>
+  <refmeta>
+    <refentrytitle>ocaml_process_monitor</refentrytitle>
+    <manvolnum>1</manvolnum>
+  </refmeta>
+  
+  <refnamediv>
+    <refname><command>ocaml-process-monitor</command></refname>
+    <refpurpose>&todo;</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    &todo;
+    <!-- Description of a program
+    <cmdsynopsis>
+      <command><command>ocaml-process-monitor</command></command>
+      <arg choice="opt">-view
+        <group>
+          <arg choice="req">History</arg>
+          <arg choice="req">PMP</arg>
+          <arg choice="req">Trace</arg>
+          <arg choice="req">TraceGraphic</arg>
+        </group>
+      </arg>
+      <group>
+        <arg choice="plain">-version</arg>
+        <arg choice="plain">-short-version</arg>
+        <arg choice="plain">-help</arg>
+        <group>
+          <arg choice="plain">file</arg>
+          <arg choice="plain">-stdin</arg>
+        </group>
+      </group>
+      <sbr/>
+      -->
+      <!-- The ocaml-gettext standard options
+      <xi:include 
+        href="ocaml-gettext-options.xml" 
+        xmlns:xi="&xi;" 
+        xpointer="xpointer(id('ocaml-gettext-options-cmdsynopsis')/node())"/>
+      -->
+      <!-- The ocaml-dbug standard options
+      <xi:include
+        href="ocaml-dbug-options.xml"
+        xmlns:xi="&xi;"
+        xpointer="xpointer(id('ocaml-dbug-options-cmdsynopsis')/node())"/>
+      -->
+      <!--
+      <sbr/>
+    </cmdsynopsis>
+    -->
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>DESCRIPTION</title>
+
+    <para>
+      &todo;
+      <!--
+      This manual page documents briefly the <command>ocaml-process-monitor</command> command.
+      -->
+    </para>
+
+    <!-- Describe options of the program/function
+    <para>
+      This program reads a XML stream conforming to the dbug DTD. It creates,
+      using this stream dynamic views.
+    </para>
+
+    <para>
+      If neither <option>-stdin</option> nor <option>file</option> is used, a file can be 
+      loaded from the GUI.
+    </para>
+
+    <variablelist>
+      <varlistentry>
+        <term>
+          <option>-view History</option>
+        </term>
+        <listitem>
+          <para>
+            Start with the history view opened. This view displays a simple list of the 
+            dbug stream element. This is the default view.
+          </para>
+        </listitem>
+        </varlistentry>
+        <varlistentry>
+        <term>
+          <option>-view PMP</option>
+        </term>
+        <listitem>
+          <para>
+            Start with the PMP view opened. The real name of this view is Poor Man 
+            Profiler. It displays all the function which are traced in the dbug stream 
+            and the time spent for each call of this function. It requires to use 
+            <option>-dbug-trace</option> and <option>-dbug-time</option> 
+            for running the program which generate the dbug stream.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>-view Trace</option>
+        </term>
+        <listitem>
+          <para>
+            Start with the trace view opened. This view displays a tree of the dbug 
+            stream element. It requires to use <option>-dbug-trace</option> for 
+            running the program which generate the dbug stream.
+          </para>
+        </listitem>
+      </varlistentry>
+        <varlistentry>
+        <term>
+          <option>-view TraceGraphic</option>
+        </term>
+        <listitem>
+          <para>
+            Start with the trace view opened. This view displays a graph of the 
+            dbug stream trace. It requires to use <option>-dbug-trace</option> for 
+            running the program which generate the dbug stream.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>-version</option>
+        </term>
+        <listitem>
+          <para>
+            Return version information on ocaml-dbug.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>-short-version</option>
+        </term>
+        <listitem>
+          <para>
+            Return only the version of ocaml-dbug. The return is made to be easily parseable by <command>configure</command>
+            script. The output of this command will always be the shortest version string, made of numeric characters ( 0-9 ) and 
+            &quot;.&quot;. The version strings should be compared considering that a version A is greater than a version B if there is a 
+            number between two &quot;.&quot; of A that is greater than B the corresponding number, beginning at the right of the string. 
+            For example: 0.14 is greater than 0.13.1.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>-help</option>
+        </term>
+        <listitem>
+          <para>
+            Display the help about the <command>ocaml-dbug</command> command.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>-stdin</option>
+        </term>
+        <listitem>
+          <para>
+            Use stdin as the dbug stream.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>file</option>
+        </term>
+        <listitem>
+          <para>
+            Use the specified file as the dbug stream. This file can be a special device or grow
+            during the load.
+          </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+    -->
+  </refsect1>
+
+  <!-- Use the document ocaml-gettext-options to generate a description
+       of the available gettext options
+  <refsect1>
+    <xi:include 
+      href="ocaml-gettext-options.xml"
+      xmlns:xi="&xi;"
+      xpointer="xpointer(id('ocaml-gettext-options-description')/node())" />
+  </refsect1>
+  -->
+
+  <!-- Use the document ocaml-dbug-options to generate a description
+       of the available dbug options
+  <refsect1>
+    <xi:include
+      href="ocaml-dbug-options.xml"
+      xmlnfs:xi="&xi;"
+      xpointer="xpointer(id('ocaml-dbug-options-description')/node())" />
+  </refsect1>
+  -->
+  
+  <refsect1>
+    <title>SEE ALSO</title>
+  
+    <!-- Reference the manpage of ocaml-gettext
+    <para>
+      <citerefentry>
+        <refentrytitle>ocaml-gettext</refentrytitle>
+        <manvolnum>5</manvolnum>
+      </citerefentry>
+    </para>
+    -->
+    <!-- Reference the manpage of ocaml-dbug
+    <para>
+      <citerefentry>
+        <refentrytitle>ocaml-dbug</refentrytitle>
+        <manvolnum>5</manvolnum>
+      </citerefentry>
+    </para>
+    -->
+  </refsect1>
+</refentry>

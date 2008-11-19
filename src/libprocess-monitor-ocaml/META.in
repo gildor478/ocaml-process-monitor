@@ -1,0 +1,7 @@
+# TODO: copyright
+
+version = "$(pkg_version)"
+requires = ""
+description = ""
+archive(byte) = "processMonitor.cma"
+archive(native) = "processMonitor.cmxa"
