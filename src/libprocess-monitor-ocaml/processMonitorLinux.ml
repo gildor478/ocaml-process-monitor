@@ -25,10 +25,6 @@ let pid_read children pid wdata =
       open_in ("/proc/"^(string_of_int pid)^"/stat")
     in
 
-    let buff_scan = 
-      seek_in chn 0;
-      Scanf.Scanning.from_channel chn
-    in
       (* We read proc/pid/stat entry to get main data about the process PID.
        * There is 2 way getting information about this file:
        * - linux kernel source code
@@ -87,48 +83,76 @@ let pid_read children pid wdata =
        *  42       cputime_to_clock_t(gtime),
        *  43       cputime_to_clock_t(cgtime));
        *) 
-      Scanf.bscanf
-        buff_scan 
-        "%d (%_s@) %c %d %_d %_d %_d %_d %_u %_lu \
-         %_lu %_lu %_lu %lu %lu %_ld %_ld %_ld \
-         %_ld %u 0 %_Lu %Lu %Ld %_Lu %_Lu %_Lu \
-         %_Lu %_Lu %_Lu %_Lu %_Lu %_Lu %_Lu %_Lu \
-         %_Lu %_Lu %_Lu %u %_Lu %_Lu %_Lu %_Lu %_Ld\n"
-        (fun  (* 01 *) rpid
-              (* 03 *) cstate
-              (* 04 *) ppid
-              (* 14 *) user_time 
-              (* 15 *) kernel_time 
-              (* 20 *) num_threads
-              (* 22 *) vsize 
-              (* 23 *) rss 
-              (* 38 *) cpu  ->
-           let () = 
-             assert (rpid = pid)
-           in
-           let state =
-             match cstate with 
-               | 'R' -> Running 
-               | 'S' -> Sleeping
-               | 'D' -> WaitingDisk
-               | 'Z' -> Zombie
-               | 'T' -> Traced
-               | 'W' -> Paging
-               | _   -> StateUnknown
-           in
-           let vmrss =
-             (Int64.to_float rss) *. page_size
-           in
-             close_in chn;
-             {
-               wdata with 
-                   vmsize    = (Int64.to_float vsize) +. wdata.vmsize;
-                   vmrss     = vmrss +. wdata.vmrss;
-                   thread    = num_threads + wdata.thread;
-                   cpu       = add_pid_data pid cpu wdata.cpu;
-                   state     = add_pid_data pid state wdata.state;
-             }
-        )
+    let stat = 
+      seek_in chn 0;
+      input_line chn
+    in
+
+    let stat_splitted =
+
+      let rec split_blank acc i =
+        if i < String.length stat then
+          (
+            try
+              let next = 
+                String.index_from stat i ' '
+              in
+                split_blank 
+                  ((String.sub stat i (next - i)) :: acc)
+                  (next + 1)
+            with Not_found ->
+              let lst =
+                String.sub stat i ((String.length stat) - i)
+              in
+                split_blank (lst :: acc) (String.length stat)
+          )
+        else
+          (
+            (Array.of_list (List.rev acc))
+          )
+      in
+
+        split_blank [] 0
+    in
+
+    let rpid =
+      int_of_string stat_splitted.(0)
+    in
+    let cstate =
+      stat_splitted.(2)
+    in
+    let num_threads = 
+      int_of_string stat_splitted.(19)
+    in
+    let vsize =
+      Int64.of_string stat_splitted.(22)
+    in
+    let vmrss =
+      (float_of_string stat_splitted.(23)) *. page_size
+    in
+    let cpu =
+      int_of_string stat_splitted.(38)
+    in
+    let state =
+      match cstate with 
+        | "R" -> Running 
+        | "S" -> Sleeping
+        | "D" -> WaitingDisk
+        | "Z" -> Zombie
+        | "T" -> Traced
+        | "W" -> Paging
+        | _   -> StateUnknown
+    in
+      assert (rpid = pid);
+      close_in chn;
+      {
+        wdata with 
+            vmsize    = (Int64.to_float vsize) +. wdata.vmsize;
+            vmrss     = vmrss +. wdata.vmrss;
+            thread    = num_threads + wdata.thread;
+            cpu       = add_pid_data pid cpu wdata.cpu;
+            state     = add_pid_data pid state wdata.state;
+      }
   in
 
   let pid_children pid =
