@@ -119,11 +119,15 @@ let create conf =
       (fun wd ->
          try
            (
-             {wd with 
-                 dirsize =
-                   FileUtil.string_of_size 
-                     (FileUtil.size_to_Mo
-                        (fst (FileUtil.StrUtil.du conf.watch_dir)))}
+             let (sz, files_sz) = 
+               FileUtil.StrUtil.du conf.watch_dir
+             in
+               {wd with 
+                   dirsize =
+                     FileUtil.string_of_size 
+                       (FileUtil.size_to_Mo sz);
+                   dirfiles =
+                     fst (List.split files_sz)}
            )
          with _ ->
            wd

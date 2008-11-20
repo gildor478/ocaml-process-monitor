@@ -92,13 +92,14 @@ let () =
     in
     let new_str = 
       Printf.sprintf 
-        "Time: %.2fs; VMSize: %s; VMRss: %s; Max. size: %s; Process: %d; Directory size: %s;"
+        "Time: %.2fs; Size: %s; Rss: %s; Max. size: %s; Proc. : %d; Dir. size: %s; Dir. files: %d;"
         wd.timestamp
         (string_of_bytes wd.vmsize)
         (string_of_bytes wd.vmrss)
         (string_of_bytes max_size)
         (MapPid.fold (fun _ _ i -> i + 1) wd.state 0)
         wd.dirsize
+        (List.length wd.dirfiles)
     in
     let new_width =
       if !rnoinplace then

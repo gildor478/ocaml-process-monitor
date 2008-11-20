@@ -45,6 +45,10 @@ type watch_data =
       *)
     dirsize: string;
 
+    (** Files in the directory watched
+      *)
+    dirfiles: string list;
+
     (** Event send by the application (when application is aware of
       * ocaml-process-monitor)
       *)
@@ -64,6 +68,7 @@ let default =
     thread    = 0;
     cpu       = MapPid.empty;
     dirsize   = "0B";
+    dirfiles  = [];
     event     = MapPid.empty;
     state     = MapPid.empty;
   }
