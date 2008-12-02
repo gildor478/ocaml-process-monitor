@@ -43,11 +43,11 @@ type watch_data =
 
     (** Size of the directory watched
       *)
-    dirsize: string;
+    dirsize: (dirname * string) list;
 
     (** Files in the directory watched
       *)
-    dirfiles: string list;
+    dirfiles: (dirname * (filename list)) list;
 
     (** Event send by the application (when application is aware of
       * ocaml-process-monitor)
@@ -67,7 +67,7 @@ let default =
     vmrss     = 0.0;
     thread    = 0;
     cpu       = MapPid.empty;
-    dirsize   = "0B";
+    dirsize   = [];
     dirfiles  = [];
     event     = MapPid.empty;
     state     = MapPid.empty;
@@ -104,7 +104,7 @@ let to_string t =
       (string_of_bytes t.vmrss)
       t.thread 
       (pid_map_string string_of_int) t.cpu    
-      t.dirsize
+      (String.concat ", " (List.map (fun (a, b) -> a^" "^b) t.dirsize))
       (pid_map_string (fun s -> s)) t.event  
       (pid_map_string string_of_state) t.state  
 ;;

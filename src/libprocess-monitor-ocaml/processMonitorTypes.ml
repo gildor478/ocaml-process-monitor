@@ -31,6 +31,11 @@ type time_second = float
 type dirname = string
 ;;
 
+(** File name
+  *)
+type filename = string
+;;
+
 (** {1 Exception} *)
 
 (** Trying to use a feature which is not implementated. 

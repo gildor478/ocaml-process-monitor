@@ -134,15 +134,22 @@ let create conf =
       (fun wd ->
          try
            (
-             let (sz, files_sz) = 
-               FileUtil.StrUtil.du conf.watch_dir
+             let szs = 
+               List.map 
+                 (fun dir -> dir, (fst (FileUtil.StrUtil.du [dir])))
+                 conf.watch_dir
+             in
+             let files = 
+               List.map 
+                 (fun dir -> dir, (FileUtil.StrUtil.find FileUtil.Is_file dir (fun acc fn -> fn :: acc) []))
+                 conf.watch_dir
              in
                {wd with 
                    dirsize =
-                     FileUtil.string_of_size 
-                       (FileUtil.size_to_Mo sz);
-                   dirfiles =
-                     fst (List.split files_sz)}
+                     List.map
+                       (fun (dir, sz) -> dir, FileUtil.string_of_size (FileUtil.size_to_Mo sz))
+                       szs;
+                   dirfiles = files}
            )
          with _ ->
            wd
@@ -157,6 +164,7 @@ let create conf =
       watchdata_fun = [time_wd_fun; os_wd_fun; dirsize_fun];
     }
 ;;
+
 let poll t =
   if t.use_waitpid then 
     (
