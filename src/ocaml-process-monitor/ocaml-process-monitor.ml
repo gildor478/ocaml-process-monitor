@@ -11,7 +11,7 @@ let () =
   let rinterval =
     ref 1.0
   in
-  let rnoinplace =
+  let rinplace =
     ref false
   in
   let default_process =  
@@ -34,8 +34,8 @@ let () =
       Arg.Set_float rinterval,
       "seconds Interval to check process status";
 
-      "--no-inplace",
-      Arg.Set rnoinplace,
+      "--inplace",
+      Arg.Set rinplace,
       " Don't write status line in-place";
 
       "--nowatch-resources",
@@ -141,13 +141,13 @@ let () =
               wd.dirsize))
     in
     let new_width =
-      if !rnoinplace then
-        0
-      else
+      if !rinplace then
         String.length new_str
+      else
+        0
     in
       Printf.printf "%s%s%!" erase_str new_str;
-      if !rnoinplace then
+      if not !rinplace then
         print_newline ();
       new_width, max_size
   in
