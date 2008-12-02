@@ -25,8 +25,7 @@ let _ =
   (* Default process monitor configuration *)
   let conf_default =
     {
-      prog            = test_emulator;
-      args            = [||];
+      process         = SubProcess(test_emulator, [||]);
       watch_resources = false;
       watch_children  = false;
       watch_dir       = [];

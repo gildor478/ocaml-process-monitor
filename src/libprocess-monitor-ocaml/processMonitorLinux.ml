@@ -14,6 +14,11 @@ let page_size =
   4096.0
 ;;
 
+(** Check that process exists *)
+let pid_test pid =
+  Sys.file_exists ("/proc/"^(string_of_int pid)^"/stat")
+;;
+
 (** Merge watch data extracted from related PID
   *)
 let pid_read children pid wdata = 

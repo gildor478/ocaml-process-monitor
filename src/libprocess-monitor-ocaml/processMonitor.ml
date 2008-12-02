@@ -20,15 +20,22 @@ type poll_result =
   | ProcessLive of watch_data
 ;;
 
+type process =
+  (** Watch already started process of pid *)
+  | Pid of int 
+
+  
+  (** [prog] and [args] used to run the process to monitor see {!Unix.execv}
+      and {!Unix.create_process}. 
+    *)
+  | SubProcess of string * string array
+;;
+
 (** Configuration of monitoring 
   *)
 type configuration =
   {
-    (** [prog] and [args] used to run the process to monitor
-      * see {!Unix.execv} and {!Unix.create_process}.
-      *)
-    prog:            string;
-    args:            string array;
+    process:          process;
 
     (** Define what to watch for see {!watch_data}.
       *)
@@ -50,6 +57,7 @@ type t =
     {
       conf:          configuration;
       pid:           pid;
+      use_waitpid:   bool;
       watchdata_fun: (watch_data -> watch_data) list;
     }
 ;;
@@ -66,33 +74,40 @@ let string_of_exception exc =
 ;;
 
 let create conf =
-  let args =
-    Array.append [|conf.prog|] conf.args
-  in
-  let pid =
-    match conf.limit_time, conf.limit_mem with 
-      | Some _, _ 
-      | _, Some _ ->
+  let pid, use_waitpid =
+    match conf.process with 
+      | Pid pid ->
+          pid, false
+      | SubProcess (prog, args) ->
           (
-            let pid = 
-              Unix.fork ()
+            let args =
+              Array.append [|prog|] args
             in
-              if pid = 0 then
-                (
-                  (* TODO: setrlimit; *)
-                  Unix.execv
-                    conf.prog
-                    args
-                );
-              pid
+              match conf.limit_time, conf.limit_mem with 
+                | Some _, _ 
+                | _, Some _ ->
+                    (
+                      let pid = 
+                        Unix.fork ()
+                      in
+                        if pid = 0 then
+                          (
+                            (* TODO: setrlimit; *)
+                            Unix.execv
+                              prog
+                              args
+                          );
+                        pid, true
+                    )
+                | None, None ->
+                    Unix.create_process 
+                      prog
+                      args
+                      Unix.stdin
+                      Unix.stdout
+                      Unix.stderr,
+                    true
           )
-      | None, None ->
-          Unix.create_process 
-            conf.prog
-            args
-            Unix.stdin
-            Unix.stdout
-            Unix.stderr
   in
   let time_wd_fun =
     let start_time =
@@ -138,19 +153,34 @@ let create conf =
     {
       conf          = conf;
       pid           = pid;
+      use_waitpid   = use_waitpid;
       watchdata_fun = [time_wd_fun; os_wd_fun; dirsize_fun];
     }
 ;;
 let poll t =
-  match Unix.waitpid [Unix.WNOHANG] t.pid with
-    | 0, _ ->
+  if t.use_waitpid then 
+    (
+      match Unix.waitpid [Unix.WNOHANG] t.pid with
+        | 0, _ ->
+            ProcessLive 
+              (List.fold_left 
+                 (fun wd f -> f wd) 
+                 ProcessMonitorWatchData.default
+                 t.watchdata_fun)
+        | pid, process_status ->
+            ProcessExited process_status
+    )
+  else
+    (
+      if PML.pid_test t.pid then
         ProcessLive 
           (List.fold_left 
              (fun wd f -> f wd) 
              ProcessMonitorWatchData.default
              t.watchdata_fun)
-    | pid, process_status ->
-        ProcessExited process_status
+      else
+        ProcessExited (Unix.WEXITED 0)
+    )
 ;;
 
 let rec auto_poll t interval f a =

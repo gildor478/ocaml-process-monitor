@@ -14,13 +14,15 @@ let () =
   let rnoinplace =
     ref false
   in
+  let default_process =  
+    SubProcess("", [||])
+  in
   let rconf =
     ref 
       {
-        prog            = "";
-        args            = [||];
-        watch_resources = false;
-        watch_children  = false;
+        process         = default_process;
+        watch_resources = true;
+        watch_children  = true;
         watch_dir       = [];
         limit_mem       = None;
         limit_time      = None;
@@ -36,16 +38,16 @@ let () =
       Arg.Set rnoinplace,
       " Don't write status line in-place";
 
-      "--watch-resources",
+      "--nowatch-resources",
       Arg.Unit 
         (fun () ->
-           rconf := {!rconf with watch_resources = true}),
+           rconf := {!rconf with watch_resources = false}),
       " Watch resources used by the process";
 
-      "--watch-children",
+      "--nowatch-children",
       Arg.Unit
         (fun () ->
-           rconf := {!rconf with watch_children = true}),
+           rconf := {!rconf with watch_children = false}),
       " Watch resources used by the process";
 
       "--watch-dir",
@@ -54,10 +56,26 @@ let () =
            rconf := {!rconf with watch_dir = str :: !rconf.watch_dir}),
       "dir Watch directory size";
 
+      "--pid",
+      Arg.Int
+        (fun i ->
+           rconf := {!rconf with process = Pid i}),
+      "pid Watch process associated to pid";
+
       "--",
       Arg.Rest 
         (fun str -> 
-           rconf := {!rconf with args = Array.append !rconf.args [|str|]}),
+           let process = 
+             match !rconf.process with 
+               | SubProcess (prog, args) ->
+                   SubProcess (prog, Array.append args [|str|])
+               | Pid pid ->
+                   failwith 
+                     (Printf.sprintf
+                        "Watching process pid %d, cannot use process argument"
+                        pid)
+           in
+             rconf := {!rconf with process = process}),
       "[...] Process arguments";
     ]
   in
@@ -65,11 +83,22 @@ let () =
   let () =
     Arg.parse 
       (Arg.align args)
-      (fun str -> 
-         if !rconf.prog <> "" then
-           Printf.eprintf "Overriding former program name %S" !rconf.prog;
 
-         rconf := {!rconf with prog = str})
+      (fun str -> 
+         let process = 
+           match !rconf.process with 
+             | SubProcess (prog, args) ->
+                 if prog <> "" then
+                   Printf.eprintf "Overriding former program name %S" prog;
+                 SubProcess (str, args)
+             | Pid pid ->
+                 failwith 
+                   (Printf.sprintf
+                      "Watching process pid %d, cannot update program name"
+                      pid)
+         in
+           rconf := {!rconf with process = process})
+
       ProcessMonitorConfig.copyright
   in
 
