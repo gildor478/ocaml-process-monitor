@@ -1,0 +1,9 @@
+/_build/
+/setup.data
+/setup.log
+/dist/
+/test.byte
+/buildsys.data
+/myocamlbuild.ml
+/ocaml-process-monitor.itarget
+/src/libprocess-monitor-ocaml/processMonitorConfig.ml
