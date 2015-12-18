@@ -1,0 +1,174 @@
+#!/bin/sh
+
+# monitor a process and log its activity
+# TODO licence
+
+set -e 
+
+# Output variable ($2) for PID ($1) or default value ($3)
+status ()
+{
+  if test /proc/$1/status; then
+    RES=`cat /proc/$1/status | sed "s/\t/ /g" | sed "s/  */ /g" | grep $2 | cut -d ' ' -f 2`
+    if test -z "$RES";  then
+      echo $3
+    else
+      echo $RES
+    fi
+  else
+    echo $3
+  fi
+}
+
+# Take a picture of a process and add the statistic to DB
+click ()
+{
+  VMSIZE=$((`status $MPID VmSize 0` / 1024))
+  VMRSS=$((`status $MPID VmRSS 0` / 1024))
+  THREAD=`status $MPID Thread 1`
+  SLEEPAVG=`status $MPID SleepAVG 100% | sed "s/%//g"`
+  if [ -n "$WATCHDIR" ]; then
+    WATCHDIR_SIZE=$((`du $WATCHDIR -s | cut -f 1` / 1024))
+    WATCHDIR_SIZE=$(($WATCHDIR_SIZE - $WATCHDIR_SIZE_INIT))
+  else
+    WATCHDIR_SIZE=0
+  fi
+  TIME=$((($SECONDS - $TIME_INIT) * 1000))
+  sqlite3 $DB \
+  "INSERT INTO monitor_full \
+  (ID, TIME, VMSIZE, VMRSS, THREAD, SLEEPAVG, WATCHDIR_SIZE)
+  VALUES \
+  ('$ID',$TIME,$VMSIZE,$VMRSS,$THREAD,$SLEEPAVG,$WATCHDIR_SIZE)"
+}
+
+# Parse command line arguments
+
+print_help ()
+{
+  cat <<EOT
+bench-monitor -- Written by Sylvain Le Gall
+
+Benchmark process monitor
+
+Usage:
+bench-monitor [options] -- [process command line]
+
+Options:
+--db file       Database where monitor data will be outputed
+--time-max time Limit of CPU time foreach test (seconds)
+--mem-max mem   Limit of memory foreach test (kbytes)
+--watchdir dir  Directory which size need to be monitored
+--id str        ID to use when creating database entry
+
+-h|--help       Display this message
+
+EOT
+}
+
+print_help_error ()
+{
+  echo "$*" >&2
+  print_help
+  exit 1
+}
+
+arg_error ()
+{
+  if [ -z "$1" ]; then
+    print_help_error "$*" 
+  fi
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --db)
+      shift
+      arg_error "$1" "Missing DB file"
+      DB="$1"
+      ;;
+    --watchdir)
+      shift
+      arg_error "$1" "Missing watch directory"
+      WATCHDIR="$WATCHDIR $1"
+      ;;
+    --id)
+      shift
+      arg_error "$1" "Missing id"
+      ID="$1"
+      ;;
+    --time-max)
+      shift
+      arg_error "$1" "Missing max CPU time for test"
+      ulimit -t $1
+      ;;
+    --mem-max)
+      shift
+      arg_error "$1" "Missing max memory for test"
+      ulimit -v $1
+      ;;
+
+    -h|--help)
+      print_help
+      exit 0
+      ;;
+    --)
+      shift
+      CMD="$*"
+      break
+      ;;
+  esac
+  shift
+done
+
+# Check arguments
+
+if test -z "$DB"; then
+  print_help_error "You must defined a DB"
+fi
+
+# Create DB/tables if required
+
+sqlite3 $DB \
+"CREATE TABLE IF NOT EXISTS monitor_full \
+(ID varchar, TIME int, VMSIZE int, \
+VMRSS int, THREAD int, SLEEPAVG int, WATCHDIR_SIZE int)"
+sqlite3 $DB \
+"CREATE TABLE IF NOT EXISTS monitor_summary \
+(ID varchar PRIMARY KEY, EXIT_CODE int)" 
+
+# Initialize data
+
+if [ -n "$WATCHDIR" ]; then
+  WATCHDIR_SIZE_INIT=`du $WATCHDIR -s | cut -f 1`
+fi
+TIME_INIT=$SECONDS
+
+# Run command
+
+$* &
+MPID=$!
+trap "test -d /proc/$MPID && kill $MPID" EXIT
+
+# Inject one value, to have a non zero minimum time 
+sqlite3 $DB \
+"INSERT INTO monitor_full \
+(ID, TIME, VMSIZE, VMRSS, THREAD, SLEEPAVG, WATCHDIR_SIZE)
+VALUES \
+('$ID',1,0,0,1,0,0)"
+
+while test -e /proc/$MPID/status; do
+  click
+  sleep 1
+done
+wait $MPID
+MPID_EXIT_CODE=$?
+
+# Write final status to DB
+sqlite3 $DB \
+"INSERT INTO monitor_summary \
+(ID, EXIT_CODE) \
+VALUES \
+(\"$ID\", $MPID_EXIT_CODE)"
+
+# Exit with same exit code as application
+exit $MPID_EXIT_CODE

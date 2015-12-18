@@ -1,0 +1,33 @@
+
+body {
+	margin-left: 20%;
+	margin-right: 20%;
+}
+
+h1 {
+	padding-top: 1em;
+	font-style: italic;
+}
+
+table#summary-tab-general, table#summary-tab-rank {
+	padding-top: 1em;
+	margin-left: auto;
+	margin-right: auto;	
+}
+
+
+td.summary-value {
+	text-align: right;
+}
+
+td.summary-label {
+	font-style: italic;
+}
+
+td.summary-rank {
+	text-align: center;
+}
+ 
+td.summary-perf, td.summary-time {
+	text-align: right;
+}

@@ -1,0 +1,180 @@
+#!/bin/sh
+
+# run sort programs and gather statistic
+# TODO licence
+
+set -e
+
+# Global variables 
+
+PRG_SORT_IDX=0
+INPUT=sample.txt
+SORT_FLAGS=
+DB=
+TESTS_DIR=`dirname $0`
+BENCH_MONITOR_FLAGS=
+
+# Parse command line arguments
+
+print_help ()
+{
+  cat <<EOT
+bench-sort -- Written by Sylvain Le Gall
+
+Benchmark sort performance
+
+Usage:
+bench-sort [options] [sort-program]
+
+Options:
+-i file         File to sort (mandatory)
+-T directory    Temporary directory 
+-h|--help       Display this help message
+-v              Output readable information (user oriented)
+--db file       DB to fill          
+--time-max time Limit of CPU time foreach test (seconds)
+--mem-max mem   Limit of memory foreach test (kbytes)
+
+EOT
+}
+
+print_help_error ()
+{
+  echo "$*" >&2
+  print_help
+  exit 1
+}
+
+arg_error ()
+{
+  if [ -z "$1" ]; then
+    print_help_error "$*"
+  fi
+}
+
+exit_error ()
+{
+  echo "$*" >&2
+  exit 1
+}
+
+
+while [ $# -gt 0 ]; do 
+  case "$1" in
+    --input|-i)
+      shift
+      arg_error "$1" "Missing input file"
+      INPUT="$1"
+      ;;
+    -T)
+      shift
+      arg_error "$1" "Missing temporary directory"
+      TEMP_DIR="$1"
+      ;;
+    --db)
+      shift
+      arg_error "$1" "Missing DB file"
+      DB=$1
+      ;;
+    --time-max)
+      shift
+      arg_error "$1" "Missing max CPU time for test"
+      BENCH_MONITOR_FLAGS="$BENCH_MONITOR_FLAGS --time-max $1" 
+      ;;
+    --mem-max)
+      shift
+      arg_error "$1" "Missing max memory for test"
+      BENCH_MONITOR_FLAGS="$BENCH_MONITOR_FLAGS --mem-max $1" 
+      ;;
+    -h|--help)
+      print_help
+      exit 0
+      ;;
+    --)
+      shift 
+      SORT_FLAGS="$*"
+      break
+      ;;
+    *)
+      PRG_SORT[$PRG_SORT_IDX]="$1"
+      PRG_SORT_IDX=$(($PRG_SORT_IDX + 1))
+      ;;
+  esac
+  shift || break
+done
+
+# Check arguments
+
+if ! test -e "$INPUT"; then 
+  print_help_error "Input file '$INPUT' doesn't exist"
+fi
+
+if ! test -d "$TEMP_DIR"; then
+  print_help_error "Temporary directory '$TEMP_DIR' doesn't exist"
+fi
+
+if test -z "$DB"; then
+  print_help_error "DB file is not set"
+fi
+
+# Create DB/tables if required
+
+sqlite3 $DB \
+"CREATE TABLE IF NOT EXISTS benchmark_run \
+(ID varchar, TIMESTAMP int, SORT_FLAGS varchar, \
+INPUT_FILE varchar, INPUT_FILE_SIZE int)"
+sqlite3 $DB \
+"CREATE TABLE IF NOT EXISTS benchmark_unit \
+(ID varchar, ID_UNIT varchar, NAME varchar, CHK varchar(1) DEFAULT 'u')"
+
+# Initialize data
+
+INPUT_SIZE=`stat -L -c '%s' $INPUT`
+INPUT_FILENAME=`basename $INPUT`
+TIMESTAMP=`date +%s`
+ID_RUN=`uuidgen`
+
+PRG_SORT_TMP=`mktemp -p . bench-sort-tmp.XXXXXXX` \
+  || exit_error "Cannot create temporary file"
+TEMP_DIR=`mktemp -d -p . bench-sort-tmp.XXXXXXX` \
+  || exit_error "Cannot create temporary directory"
+trap "rm -rf $PRG_SORT_TMP $TEMP_DIR" EXIT 
+
+sqlite3 $DB \
+"INSERT INTO benchmark_run \
+(ID, TIMESTAMP, SORT_FLAGS, INPUT_FILE, INPUT_FILE_SIZE) \
+VALUES \
+('$ID_RUN', $TIMESTAMP, '$SORT_FLAGS', '$INPUT_FILENAME', $INPUT_SIZE)"
+
+# Run benchmark
+
+BENCH_MONITOR_FLAGS="$BENCH_MONITOR_FLAGS --watchdir $TEMP_DIR --db $DB"
+for i in `seq 0 $(($PRG_SORT_IDX - 1))`; do 
+  echo -n "${PRG_SORT[$i]}: sort"
+  if [ "${PRG_SORT[$i]}" == "nsort" ]; then
+    CLI="${PRG_SORT[$i]} $SORT_FLAGS  -T$TEMP_DIR -o $PRG_SORT_TMP $INPUT"
+  else
+    CLI="${PRG_SORT[$i]} $SORT_FLAGS  -T $TEMP_DIR -o $PRG_SORT_TMP $INPUT"
+  fi
+  ID_UNIT=`uuidgen`
+  sqlite3 $DB \
+  "INSERT INTO benchmark_unit \
+  (ID, ID_UNIT, NAME) \
+  VALUES
+  ('$ID_RUN', '$ID_UNIT', '${PRG_SORT[$i]}')"
+  $TESTS_DIR/bench-monitor --id "$ID_UNIT" $BENCH_MONITOR_FLAGS -- $CLI || true
+
+  echo -n ", check"
+  if sort -c $SORT_FLAGS $PRG_SORT_TMP > /dev/null 2>&1; then
+    echo -n " succeed"
+    CHECK=t
+  else
+    echo -n " fail"
+    CHECK=f
+  fi
+  sqlite3 $DB \
+  "UPDATE benchmark_unit \
+  SET CHK='$CHECK' \
+  WHERE ID = '$ID_RUN' AND ID_UNIT='$ID_UNIT'"
+  echo
+done

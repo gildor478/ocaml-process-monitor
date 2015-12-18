@@ -1,0 +1,226 @@
+#!/bin/sh
+
+# output benchmark statistic in html
+# TODO licence
+
+set -e
+
+# Global variables
+
+DB=
+OUTPUT=./
+
+# Parse command line argument
+
+# TODO help
+arg_error ()
+{
+  if [ -z "$1" ]; then
+    echo "$*" >&2
+  fi
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --db)
+      shift
+      arg_error "$1" "Missing DB file"
+      DB="$1"
+      ;;
+    --output)
+      shift
+      OUTPUT="$*"
+      break
+      ;;
+  esac
+  shift
+done
+
+# Check arguments
+
+if test -z "$DB"; then
+  echo "You must define a DB" >&2
+fi
+
+if ! test -e $DB; then
+  echo "$DB doesn't exist" >&2
+fi
+
+if ! test -e "$OUTPUT"; then
+  mkdir "$OUTPUT"
+fi
+
+if ! test -d "$OUTPUT"; then
+  echo "$OUTPUT is not a directory" >&2
+fi
+
+# Temporary files
+
+TMP1=`mktemp -p . bench-html.XXXXXXX` || exit 1
+TMP2=`mktemp -p . bench-html.XXXXXXX` || exit 1
+trap "rm -rf '$TMP1' '$TMP2'" EXIT
+
+# Create main HTML file
+
+cat > $OUTPUT/index.html <<EOF 
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Benchmark statistics</title>
+<link href="style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<h1>Summary</h1>
+EOF
+
+# Compute summary
+
+ID_UNIT=`sqlite3 $DB \
+"SELECT ID, MAX(TIMESTAMP) FROM benchmark_run" \
+| cut -f 1 -d '|'`
+
+ID_DATA=`sqlite3 $DB \
+"SELECT TIMESTAMP,SORT_FLAGS,INPUT_FILE,INPUT_FILE_SIZE \
+FROM benchmark_run WHERE ID='$ID_UNIT'"`
+TIMESTAMP=`echo $ID_DATA | cut -f 1 -d '|'`
+DATE=`date -d @$TIMESTAMP -R`
+SORT_FLAGS=`echo $ID_DATA | cut -f 2 -d '|'`
+INPUT_FILE=`echo $ID_DATA | cut -f 3 -d '|'`
+INPUT_FILE_SIZE=`echo $ID_DATA | cut -f 4 -d '|'`
+INPUT_FILE_SIZE_M=$(($INPUT_FILE_SIZE / 1024))
+
+cat >> $OUTPUT/index.html <<EOF
+<table id="summary-tab-general">
+<tr>
+<td class="summary-label">Date:</td>
+<td class="summary-value">$DATE</td>
+</tr>
+<tr>
+<td class="summary-label">Input file:</td>
+<td class="summary-value">$INPUT_FILE</td>
+</tr>
+<tr>
+<td class="summary-label">Input size:</td>
+<td class="summary-value">$INPUT_FILE_SIZE_M MB</td>
+</tr>
+<tr>
+<td class="summary-label">Sort flags:</td>
+<td class="summary-value">$SORT_FLAGS</td>
+</tr>
+</table>
+EOF
+
+# Summary: best performance for ID_UNIT
+
+cat >> $OUTPUT/index.html <<EOF
+<table id="summary-tab-rank">
+<tr>
+<th>Rank</th>
+<th>Name</th>
+<th>Perf.</th>
+<th>Time</th>
+</tr>
+EOF
+
+DATA=`sqlite3 $DB \
+"SELECT ID_UNIT, MAX(TIME), NAME FROM benchmark_unit, monitor_full \
+WHERE ID_UNIT = monitor_full.ID AND benchmark_unit.ID='$ID_UNIT' \
+GROUP BY ID_UNIT ORDER BY MAX(TIME) ASC"`
+
+RANK=1
+TIME_MIN=
+for i in $DATA; do
+  ID=`echo $i | cut -f 1 -d '|'`
+  TIME=`echo $i | cut -f 2 -d '|'`
+  NAME=`echo $i | cut -f 3 -d '|'`
+
+  if [ "$RANK" -eq "1" ]; then
+    TIME_MIN=$TIME
+  fi
+
+  PERF=$((($TIME_MIN * 100) / $TIME))
+  cat >> $OUTPUT/index.html <<EOF
+<tr>
+<td class="summary-rank">$RANK</td>
+<td class="summary-name">$NAME</td>
+<td class="summary-perf">$PERF%</td>
+<td class="summary-time">${TIME}ms</td>
+</tr>
+EOF
+
+  RANK=$(($RANK + 1))
+done
+
+cat >> $OUTPUT/index.html <<EOF
+</table>
+EOF
+
+# Get all the ID_UNIT for ID_UNIT
+
+DATA=`sqlite3 $DB \
+"SELECT ID_UNIT, NAME FROM benchmark_unit WHERE ID='$ID_UNIT'"`
+
+ALL_ID_UNIT=""
+for i in $DATA; do
+  ID_UNIT=`echo $i | cut -f 1 -d '|'`
+  if test -z "$ALL_ID_UNIT"; then
+    ALL_ID_UNIT="ID='$ID_UNIT'"
+  else
+    ALL_ID_UNIT="$ALL_ID_UNIT OR ID='$ID_UNIT'"
+  fi
+done
+
+MEM_MAX=`sqlite3 $DB \
+"SELECT MAX(MAX(VMSIZE), MAX(VMRSS), MAX(WATCHDIR_SIZE)) FROM \
+monitor_full WHERE $ALL_ID_UNIT"`
+MEM_MAX=$((($MEM_MAX * 110) / 100))
+TIME_MAX=`sqlite3 $DB \
+"SELECT MAX(TIME) FROM monitor_full WHERE $ALL_ID_UNIT"`
+
+# Summary: statistic for ID_UNIT
+
+for i in $DATA; do
+  ID_UNIT=`echo $i | cut -f 1 -d '|'`
+  NAME=`echo $i | cut -f 2 -d '|'`
+  sqlite3 -separator ' ' $DB \
+  "SELECT TIME, VMSIZE, VMRSS, WATCHDIR_SIZE \
+  FROM monitor_full WHERE ID='$ID_UNIT'" > $TMP1
+
+  cat > $TMP2 <<EOF
+MaxTime = $TIME_MAX
+MaxMem = $MEM_MAX
+
+set terminal png transparent size 320,240 enhanced
+
+set output "$OUTPUT/$ID_UNIT-memory.png"
+
+set key under
+
+set title "Memory monitoring for $NAME"
+
+set xlabel "Time (ms)" 
+
+set ylabel "Size (MB)"
+
+set yrange [0:MaxMem]
+
+plot [0:MaxTime] [0:MaxMem] \
+  "$TMP1" using 1:2 title "Memory (MB)" with lines, \
+  "$TMP1" using 1:3 title "RSS (MB)" with lines, \
+  "$TMP1" using 1:4 title "Temp. file (MB)" with lines
+
+EOF
+  gnuplot $TMP2
+
+  cat >> $OUTPUT/index.html <<EOF 
+<h1>$NAME monitor statistics</h1>
+<img src="$OUTPUT/$ID_UNIT-memory.png" border="0" alt="Memory monitoring for $NAME">
+EOF
+
+done
+
+cat >> $OUTPUT/index.html <<EOF
+</body>
+</html>
+EOF
